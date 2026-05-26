@@ -39,6 +39,42 @@
   cetz.coordinate.resolve(ctx, _with-anchor(name, anchor)).at(1)
 }
 
+/// Resolve the center point of a named element, including group-qualified names.
+#let resolve-element-center(ctx, name) = {
+  resolve-element-anchor(ctx, name, "center")
+}
+
+/// Resolve the border point of a named element in the direction of `toward`.
+///
+/// For plain top-level elements, preserve CeTZ's drawable-intersection behavior.
+/// For group-qualified names like `group.el`, fall back to border-anchor
+/// resolution because CeTZ does not expose the child element object directly.
+#let resolve-element-border(ctx, name, toward) = {
+  let center = resolve-element-center(ctx, name)
+
+  if type(name) == str and not name.contains(".") {
+    import cetz: intersection
+
+    let elem = ctx.nodes.at(name, default: none)
+    if elem != none {
+      let (ta, tb) = cetz.util.apply-transform(ctx.transform, center, toward)
+
+      let pts = ()
+      for d in elem.at("drawables", default: ()).filter(d => d.type == "path") {
+        pts += intersection.line-path(ta, tb, d)
+      }
+
+      if pts != () {
+        let pt = cetz.util.sort-points-by-distance(tb, pts).first()
+        return cetz.util.revert-transform(ctx.transform, pt)
+      }
+    }
+  }
+
+  let angle = calc.atan2(toward.at(0) - center.at(0), toward.at(1) - center.at(1))
+  resolve-element-anchor(ctx, name, angle)
+}
+
 /// Return the axis-aligned size `(width, height, depth)` of a named CeTZ node.
 ///
 /// The size is computed from the element's drawable bounds and is used by the

@@ -371,28 +371,9 @@
   _draw-label((line-name,), label, label-pos, 1, label-align, label-angle)
 }
 
-// Find the intersection between line a-b next to a
-// if no intersection could be found, return a.
-// This is adapted from cetz/src/draw/shapes.typ
-#let _element-line-intersection(ctx, elem, a, b) = {
-  import cetz: intersection
-  // Vectors a and b are not transformed yet, but the vectors of the
-  // drawable are.
-  let (ta, tb) = cetz.util.apply-transform(ctx.transform, a, b)
-
-  let pts = ()
-  for d in elem.at("drawables", default: ()).filter(d => d.type == "path") {
-    pts += intersection.line-path(ta, tb, d)
-  }
-  return if pts == () {
-    a
-  } else {
-    // Find the nearest point to tb (the neighbor)
-    let pt = cetz.util.sort-points-by-distance(tb, pts).first()
-
-    // Reverse the transformation
-    return cetz.util.revert-transform(ctx.transform, pt)
-  }
+// Find the border point on `name` in the direction of `b`.
+#let _element-line-intersection(ctx, name, b) = {
+  util.resolve-element-border(ctx, name, b)
 }
 
 // Returns true if `name` is an element name with the default anchor
@@ -443,8 +424,7 @@
     // If start/end are elements, we want to find the intersection with the border
     // but the neighbor for 'a' is 'target', and for 'b' (used for target) it is 'a-shifted'.
     if first-is-elem {
-      let elem = ctx.nodes.at(pt-start)
-      a = _element-line-intersection(ctx, elem, a, target)
+      a = _element-line-intersection(ctx, pt-start, target)
       // Recalculate shifted start
       a-shifted = if routing == "horizontal" {
         (a.at(0), a.at(1) + s, a.at(2))
@@ -453,8 +433,7 @@
       }
     }
     if last-is-elem {
-      let elem = ctx.nodes.at(pt-end)
-      b = _element-line-intersection(ctx, elem, b, a-shifted)
+      b = _element-line-intersection(ctx, pt-end, a-shifted)
       // Recalculate target
       target = if routing == "horizontal" {
         (b.at(0), a.at(1) + s, a.at(2))
@@ -500,8 +479,7 @@
     let (a-shifted, b-shifted, elbow) = _resolve-2w-points(a, b, routing, routing-dir, s1, s2)
 
     if first-is-elem {
-      let elem = ctx.nodes.at(pt-start)
-      a = _element-line-intersection(ctx, elem, a, elbow)
+      a = _element-line-intersection(ctx, pt-start, elbow)
       // Recalculate a-shifted (elbow depends on a-shifted and b-shifted, but
       // in 2w-north/south, elbow-x = a-shifted-x, elbow-y = b-shifted-y)
       if routing-dir == "north" or routing-dir == "south" {
@@ -513,8 +491,7 @@
       }
     }
     if last-is-elem {
-      let elem = ctx.nodes.at(pt-end)
-      b = _element-line-intersection(ctx, elem, b, elbow)
+      b = _element-line-intersection(ctx, pt-end, elbow)
       // Recalculate b-shifted
       if routing-dir == "north" or routing-dir == "south" {
         b-shifted = (b.at(0), b.at(1) + s2, b.at(2))
@@ -581,16 +558,14 @@
     let (a-shifted, b-shifted, p1, p2) = _resolve-3w-points(a, b, routing, routing-dir, sa, sb, bend-val)
 
     if first-is-elem {
-      let elem = ctx.nodes.at(pt-start)
-      a = _element-line-intersection(ctx, elem, a, p1)
+      a = _element-line-intersection(ctx, pt-start, p1)
       // Recalculate a-shifted and p1
       let res = _resolve-3w-points(a, b, routing, routing-dir, sa, sb, bend-val)
       a-shifted = res.at(0)
       p1 = res.at(2)
     }
     if last-is-elem {
-      let elem = ctx.nodes.at(pt-end)
-      b = _element-line-intersection(ctx, elem, b, p2)
+      b = _element-line-intersection(ctx, pt-end, p2)
       // Recalculate b-shifted and p2
       let res = _resolve-3w-points(a, b, routing, routing-dir, sa, sb, bend-val)
       b-shifted = res.at(1)
@@ -632,12 +607,10 @@
     let (auto-control, resolved-control) = _resolve-bezier-control(ctx, a, b, control)
 
     if first-is-elem {
-      let elem = ctx.nodes.at(pt-start)
-      a = _element-line-intersection(ctx, elem, a, resolved-control)
+      a = _element-line-intersection(ctx, pt-start, resolved-control)
     }
     if last-is-elem {
-      let elem = ctx.nodes.at(pt-end)
-      b = _element-line-intersection(ctx, elem, b, resolved-control)
+      b = _element-line-intersection(ctx, pt-end, resolved-control)
     }
 
     if auto-control {
@@ -647,12 +620,10 @@
       resolved-control = _resolve-auto-bezier-control(a, b, control)
 
       if first-is-elem {
-        let elem = ctx.nodes.at(pt-start)
-        a = _element-line-intersection(ctx, elem, start-center, resolved-control)
+        a = _element-line-intersection(ctx, pt-start, resolved-control)
       }
       if last-is-elem {
-        let elem = ctx.nodes.at(pt-end)
-        b = _element-line-intersection(ctx, elem, end-center, resolved-control)
+        b = _element-line-intersection(ctx, pt-end, resolved-control)
       }
     }
 

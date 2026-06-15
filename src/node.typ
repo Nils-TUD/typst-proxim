@@ -116,7 +116,9 @@
 ///     `"top"`, or `"bottom"` and specifies the alignment of the new element relative
 ///     to the element `name`. For example, with `"north-of"` and `"left"` the new
 ///     element is placed north of the `name` and its left border is aligned the
-///     left border of `name`.
+///     left border of `name`. To place relative to a specific anchor point instead,
+///     pass `"name.anchor"` such as `"node-name.north-west"`. When using an
+///     explicit anchor reference, `align` must remain `"center"`.
 ///   - `"in-north"`, `"in-south"`, `"in-east"`, `"in-west"`,
 ///     `"in-north-east"`, `"in-north-west"`, `"in-south-east"`, `"in-south-west"`,
 ///     `"in-center"`:

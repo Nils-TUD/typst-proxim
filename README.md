@@ -44,6 +44,22 @@ Use `north-of`, `south-of`, `east-of`, `west-of` (and diagonal variants) to plac
 })
 ```
 
+To place relative to a specific anchor point on the reference node, use the same
+`"name.anchor"` syntax as edges:
+
+```typst
+#canvas({
+  node((0, 0), [Box], name: "box", width: 2cm, height: 1cm)
+  // Place the new node west of box's north-west corner.
+  node((west-of: "box.north-west"), [Corner], width: 1cm, height: .5cm)
+})
+```
+
+With a plain name like `"box"`, proxim places relative to the node border in the
+selected direction. With `"box.anchor"`, proxim places relative to that exact
+anchor point instead. Alignment options such as `"left"` and `"top"` are only
+supported for plain element names, not explicit anchor references.
+
 #### Relative placement — inside a container
 
 Use `in-north`, `in-south`, `in-east`, `in-west` (and corner variants) to pin a child node to an inner edge of a parent. Width and height may be given as ratios relative to the container:

@@ -1,5 +1,16 @@
 #import "@preview/cetz:0.5.2"
 
+#let explicit-anchors = (
+  "north",
+  "south",
+  "west",
+  "east",
+  "north-west",
+  "north-east",
+  "south-west",
+  "south-east",
+)
+
 /// Debug helper that materializes `body` as a label containing its `repr(...)`.
 ///
 /// This is mainly useful while developing the package itself.
@@ -22,6 +33,26 @@
   }
   (name: root, anchor: anchor)
 }
+
+/// Split a `"name.anchor"` reference into `(name, anchor)`.
+///
+/// If `name` does not end in a recognized anchor suffix, return `(name, none)`.
+#let split-explicit-anchor-ref(name) = {
+  if type(name) != str {
+    return (name, none)
+  }
+
+  for anchor in explicit-anchors {
+    let suffix = "." + anchor
+    if name.ends-with(suffix) {
+      return (name.slice(0, -suffix.len()), anchor)
+    }
+  }
+
+  (name, none)
+}
+
+#let has-explicit-anchor-ref(name) = split-explicit-anchor-ref(name).at(1) != none
 
 /// Assert that the current CeTZ context was created by `nodes.canvas(...)`.
 ///

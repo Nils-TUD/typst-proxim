@@ -68,7 +68,16 @@
 /// `width` and `height` next to the referenced element.
 #let resolve-outer(ctx, dir, el, dist, align, width, height) = {
   let edge = dir.slice(0, -3)
-  let edge-pt = util.resolve-element-anchor(ctx, el, edge)
+  let (target-el, target-anchor) = util.split-explicit-anchor-ref(el)
+  assert(
+    target-anchor == none or align == "center",
+    message: "alignment is not supported when outer placement uses an explicit anchor reference",
+  )
+  let edge-pt = if target-anchor == none {
+    util.resolve-element-anchor(ctx, el, edge)
+  } else {
+    util.resolve-element-anchor(ctx, target-el, target-anchor)
+  }
 
   let (dist-x, dist-y) = if type(dist) == array {
     dist
@@ -78,7 +87,7 @@
 
   let align-offset = (0, 0, 0)
   if align != "center" {
-    let el-size = util.get-element-size(ctx, el)
+    let el-size = util.get-element-size(ctx, target-el)
     if edge == "north" or edge == "south" {
       let off = width / 2 - el-size.at(0) / 2
       if align == "left" {

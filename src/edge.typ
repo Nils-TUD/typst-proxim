@@ -381,16 +381,7 @@
   if type(name) != str {
     return false
   }
-  return not (
-    name.ends-with(".north")
-      or name.ends-with(".south")
-      or name.ends-with(".west")
-      or name.ends-with(".east")
-      or name.ends-with(".north-west")
-      or name.ends-with(".north-east")
-      or name.ends-with(".south-west")
-      or name.ends-with(".south-east")
-  )
+  return not util.has-explicit-anchor-ref(name)
 }
 
 #let _resolve-axis-points(a, b, routing, shift) = {

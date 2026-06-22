@@ -93,6 +93,14 @@
   type(control) == dictionary and "dir" in control
 }
 
+#let _resolve-bezier-control-dist(ctx, control, default) = {
+  if not _is-bezier-control-dir(control) or not ("dist" in control) {
+    return default
+  }
+
+  cetz.util.resolve-number(ctx, control.at("dist"))
+}
+
 #let _resolve-bezier-bend-dir(a, b, bend-dir) = {
   if bend-dir == auto {
     let dx = b.at(0) - a.at(0)
@@ -107,7 +115,7 @@
   }
 }
 
-#let _resolve-auto-bezier-control(a, b, control) = {
+#let _resolve-auto-bezier-control(ctx, a, b, control) = {
   let dx = b.at(0) - a.at(0)
   let dy = b.at(1) - a.at(1)
   let mid = ((a.at(0) + b.at(0)) / 2, (a.at(1) + b.at(1)) / 2, a.at(2))
@@ -115,7 +123,7 @@
   // Keep the current heuristic simple and deterministic: bow by one third of
   // the average axis span, but move along the normal of the a->b segment so the
   // control point stays perpendicular to the edge itself.
-  let offset = span / 3
+  let offset = _resolve-bezier-control-dist(ctx, control, span / 3)
   let bend-dir = if _is-bezier-control-dir(control) { control.at("dir") } else { auto }
   let bend-dir = _resolve-bezier-bend-dir(a, b, bend-dir)
   let len = calc.sqrt(dx * dx + dy * dy)
@@ -139,7 +147,7 @@
 
 #let _resolve-bezier-control(ctx, a, b, control) = {
   if control == auto or _is-bezier-control-dir(control) {
-    (true, _resolve-auto-bezier-control(a, b, control))
+    (true, _resolve-auto-bezier-control(ctx, a, b, control))
   } else {
     // Anything else is treated as a normal CeTZ coordinate, including
     // dictionary coordinates such as `(rel: ..., to: ...)`.
@@ -608,7 +616,7 @@
       // The automatic control point depends on the actual endpoints. If an
       // endpoint snaps to a node border, recompute the control point from the
       // adjusted coordinates so the curve keeps the intended bend shape.
-      resolved-control = _resolve-auto-bezier-control(a, b, control)
+      resolved-control = _resolve-auto-bezier-control(ctx, a, b, control)
 
       if first-is-elem {
         a = _element-line-intersection(ctx, pt-start, resolved-control)
@@ -715,9 +723,10 @@
 ///   `routing: "bezier"`. `auto` chooses a single quadratic Bezier control
 ///   point from the endpoints by offsetting their midpoint along a canonical
 ///   normal. A coordinate places the control point explicitly. A dictionary with
-///   `dir` chooses the automatic bend direction while preserving the automatic
-///   control-point distance, e.g. `(dir: "south")`. Supported directions are
-///   `"north"`, `"south"`, `"east"`, and `"west"`. Defaults to `auto`.
+///   `dir` chooses the automatic bend direction, and optional `dist` overrides
+///   the control-point distance, e.g. `(dir: "south", dist: 1cm)`. Supported
+///   directions are `"north"`, `"south"`, `"east"`, and `"west"`. Defaults
+///   to `auto`.
 /// - `shift` (`length` or `array`) -- Shift applied to the route segments. For
 ///   2-segment routing this may be a single value or `(shift-first,
 ///   shift-second)`. For 3-segment routing this may also be `(shift-a, shift-b)`.

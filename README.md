@@ -152,12 +152,14 @@ Use `routing: "bezier"` to draw a quadratic Bezier curve between two points or
 node anchors. By default, proxim chooses a single control point automatically by
 offsetting the midpoint along a canonical normal. The default is unchanged:
 mostly horizontal edges bow north, mostly vertical edges bow east. Use
-`control: (dir: ...)` to choose the automatic bend direction explicitly, or
-override the control point entirely with `control`:
+`control: (dir: ...)` to choose the automatic bend direction explicitly,
+`control: (dir: ..., dist: ...)` to also set the bend distance, or override the
+control point entirely with `control`:
 
 ```typst
 edge("a.east", "b.west", routing: "bezier", mark: (end: ">"))
 edge("a.east", "b.west", routing: "bezier", control: (dir: "south"), stroke: red, mark: (end: ">"))
+edge("a.east", "b.west", routing: "bezier", control: (dir: "south", dist: 1cm), stroke: green, mark: (end: ">"))
 edge("c.east", "d.west", routing: "bezier", control: (1.5, 2), stroke: blue, mark: (end: ">"))
 ```
 

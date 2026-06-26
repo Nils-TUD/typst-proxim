@@ -64,7 +64,9 @@
 }
 
 #let _place-label-content(ctx, pt, label, dist, label-align, resolved-label-angle, normal-x, normal-y) = {
-  let label-content = rotate(resolved-label-angle)[#label]
+  // We use reflow here to ensure that the rotated label’s bounding box affects the canvas bounding
+  // box. Without reflow, the label’s bounding box would remain horizontal.
+  let label-content = rotate(resolved-label-angle, reflow: true)[#label]
 
   if dist == 0.0 {
     cetz.draw.content(pt, anchor: "center", align(label-align)[#label-content])

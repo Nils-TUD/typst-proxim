@@ -54,10 +54,10 @@
   serv((north-of: ("kernel", gap * 3, "right")), [Driver], name: "drv")
 
   for (node, dist, shift, no) in (
-    ("net", -.1, -.5, [1]),
-    ("drv", .1, .5, [2]),
-    ("drv", -.1, -.5, [3]),
-    ("net", .1, .5, [4]),
+    ("net", -.25, -.5, [1]),
+    ("drv", .25, .5, [2]),
+    ("drv", -.25, -.5, [3]),
+    ("net", .25, .5, [4]),
   ) {
     let reverse = dist == .1
     edge(

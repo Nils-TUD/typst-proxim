@@ -556,22 +556,20 @@
       )
     }
 
-    let (a-shifted, b-shifted, p1, p2) = _resolve-3w-points(a, b, routing, routing-dir, sa, sb, bend-val)
+    // call it first without shifting to not apply shifts twice
+    let (a-shifted, b-shifted, p1, p2) = _resolve-3w-points(a, b, routing, routing-dir, 0, 0, bend-val)
 
+    // Snap a/b to the border of the named elements using the original
+    // (un-snapped) p1/p2 as the "toward" direction.
     if first-is-elem {
       a = _element-line-intersection(ctx, pt-start, p1)
-      // Recalculate a-shifted and p1
-      let res = _resolve-3w-points(a, b, routing, routing-dir, sa, sb, bend-val)
-      a-shifted = res.at(0)
-      p1 = res.at(2)
     }
     if last-is-elem {
       b = _element-line-intersection(ctx, pt-end, p2)
-      // Recalculate b-shifted and p2
-      let res = _resolve-3w-points(a, b, routing, routing-dir, sa, sb, bend-val)
-      b-shifted = res.at(1)
-      p2 = res.at(3)
     }
+
+    // Recompute the four points of the line with the snapped a/b.
+    let (a-shifted, b-shifted, p1, p2) = _resolve-3w-points(a, b, routing, routing-dir, sa, sb, bend-val)
 
     cetz.draw.line(
       a-shifted,

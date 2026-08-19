@@ -26,4 +26,8 @@
 
   // east routing with array shift
   edge("c.east", "a.east", routing: "3w-east", bend: 2.5cm, shift: (.3cm, -.3cm), stroke: green, mark: (end: ">"))
+
+  // this edge should overlap exactly with the previous one - even if we determine the start/end
+  // point an the box edge automatically if no anchor is specified.
+  edge("c", "a", routing: "3w-east", bend: 2.5cm, shift: (.3cm, -.3cm), stroke: orange, mark: (end: ">"))
 })

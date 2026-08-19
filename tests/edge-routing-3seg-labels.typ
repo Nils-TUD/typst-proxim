@@ -26,6 +26,7 @@
   // east and west
   tedge("a.east", "c.east", routing: "3w-east", label: lbl[east +], label-pos: (10%, 0.001), stroke: red)
   tedge("b.west", "d.west", routing: "3w-west", label: lbl[west −], label-pos: -0.001, stroke: green)
+  tedge("b", "d.south-east", routing: "3w-east", label: lbl[east −], label-pos: (20%, 0.001), stroke: yellow)
 
   // center placement
   tedge("c.south", "d.south", routing: "3w-south", label: lbl[center 0], label-pos: 0, stroke: eastern)

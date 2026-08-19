@@ -564,6 +564,11 @@
       let res = _resolve-3w-points(a, b, routing, routing-dir, sa, sb, bend-val)
       a-shifted = res.at(0)
       p1 = res.at(2)
+      // If we do not update the points below, we need to also adjust p2 here as it depends on the
+      // now changed a as well.
+      if not last-is-elem {
+        p2 = res.at(3)
+      }
     }
     if last-is-elem {
       b = _element-line-intersection(ctx, pt-end, p2)

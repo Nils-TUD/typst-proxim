@@ -83,6 +83,24 @@ Use `in-north`, `in-south`, `in-east`, `in-west` (and corner variants) to pin a 
 })
 ```
 
+#### Ports
+
+Use `ports` to add custom ports on each side of a node as CeTZ anchors.
+They can either be specified as
+- an integer denoting the number of ports on each side
+- a dictionary that contains the number or a list of port names for each side.
+proxim places these anchors on each side clockwise in an equidistant fashion.
+The placed anchors are available under `{node-name}.{n|s|w|e}.{port-name}`.
+
+```typst
+#canvas({
+  node((0, 0), [A], ports: (left: 0, top: 2, right: ("in", "out", "enable"), bottom: 1), name: "a")
+  node((east-of: ("a", 1)), [B], height: 2, ports: 2, name: "b")
+  edge("a.e.in", "b.s.2")
+})
+```
+
+
 ### Edges
 
 `edge(..points, ..style)` draws a line between two coordinates or named node anchors.

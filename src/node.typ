@@ -99,6 +99,36 @@
   }
 }
 
+#let _resolve-ports(name, port-specs) = {
+  let port-specs = cetz.util.as-padding-dict(port-specs)
+  let dirmap = (
+    "left" : ("w", ("south-west", "north-west")),
+    "top" : ("n", ("north-west", "north-east")),
+    "right" : ("e", ("north-east", "south-east")),
+    "bottom": ("s", ("south-east", "south-west")),
+  )
+
+  let result = ()
+
+  for (dir, port-spec) in port-specs.pairs() {
+    let (n, names) = if type(port-spec) == array {
+      (port-spec.len(), port-spec)
+    } else if type(port-spec) == int {
+      (port-spec, range(1, port-spec + 1).map(str))
+    }
+
+    if n == 0 { continue }
+
+    let (side-name, between-coords) = dirmap.at(dir)
+    let coords = range(n).map(i =>
+    (between-coords.at(0), 100% / n * (i + 0.5), between-coords.at(1)))
+
+    result.push((side-name, names.zip(coords)))
+  }
+
+  result
+}
+
 /// Draw a rectangular node (box) with a label on a CeTZ canvas.
 ///
 /// The node's position and size are controlled by `origin`, which can be:
@@ -129,6 +159,22 @@
 ///   - `"between"`: centres the node between two existing coordinates. The
 ///     value must be a two-element array `(coord-a, coord-b)` and may include
 ///     node anchors like `("foo.north", "bar.south")`.
+///
+/// `ports` allows the user to specify additional anchors on each side of the node.
+/// proxim places these anchors on each side in an equidistant fashion.
+/// The argument passed to `ports` can either be:
+/// - A integer -- Than every side gets this number of ports.
+/// - A dictionary -- this is interpreted like a padding dictionary of CeTZ.
+///   I.e., the keys are `"left"`, `"top"`, `"right"`, `"bottom"`-- or they get
+///   mapped to it from `"x"` and `"y"`. The value of each entry is either:
+///   - An integer. Then it denotes the number of ports on each side.
+///   - A list of port names. The length determines the number of ports.
+/// The anchors are positioned clockwise on each side and named
+/// `{node name}.{side}.{port name or number}`, where `side` is either:
+/// - "w" -- west
+/// - "n" -- north
+/// - "e" -- east
+/// - "s" -- south
 ///
 /// The remaining arguments are:
 /// - `body` (`content`) -- Content rendered inside the node.
@@ -161,6 +207,7 @@
   width: auto,
   height: auto,
   inset: .3em,
+  ports: none,
   ..style,
 ) = {
   cetz.draw.get-ctx(ctx => {
@@ -171,13 +218,25 @@
     let (anchor, loc, size) = _resolve-rect(ctx, origin, width, height, style)
 
     let name = style.at("name", default: "__r__")
-    cetz.draw.rect(
-      loc,
-      size,
-      anchor: anchor,
-      name: name,
-      ..style,
-    )
+    cetz.draw.group(name: name, {
+      cetz.draw.rect(
+        loc,
+        size,
+        anchor: anchor,
+        ..style,
+        name: "rect",
+      )
+
+      cetz.draw.copy-anchors("rect")
+
+      for (side, resolved-ports) in _resolve-ports(name, ports) {
+        cetz.draw.group(name: side, {
+          for (port-name, port-coord) in resolved-ports {
+            cetz.draw.anchor(port-name, port-coord)
+          }
+        })
+      }
+    })
 
     let (pos, anc) = _resolve-body-placement(name, body-pos, body-dist)
     cetz.draw.content(pos, anchor: anc, align(body-align)[#body])
